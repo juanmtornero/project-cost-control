@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Control presupuestario de proyectos · Norte &amp; Vega Consultores (caso ficticio)</title>
+<meta name="description" content="Panel de control presupuestario para project leads: presupuesto, real, previsión, desviación, EAC, ETC y CPI. Caso ficticio de portfolio.">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<header class="top">
+  <div class="in">
+    <h1><span id="empresa"></span> · Control presupuestario <span class="tag">v5</span></h1>
+    <div class="meta">Importes a coste interno · Caso ficticio con fines de demostración</div>
+    <nav class="tabs" role="tablist">
+      <button role="tab" aria-selected="true" data-vista="mi-cartera">Cartera</button>
+      <button role="tab" aria-selected="false" data-vista="mi-proyecto">Proyecto</button>
+      <button role="tab" aria-selected="false" data-vista="metodo">Cómo se calcula</button>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <!-- ===================== VISTA CARTERA (un Excel por proyecto) ===================== -->
+  <section class="vista" id="v-mi-cartera">
+    <div class="card barra-carga" id="mc-barra" hidden></div>
+    <div class="card" id="mc-intro">
+      <h2>Analiza varios proyectos a la vez</h2>
+      <p class="sub">Sube el Excel de cada proyecto (uno por proyecto, con la plantilla de siempre). Cada archivo se comprueba por separado: los correctos se analizan y los que tengan errores se quedan fuera, con el motivo.</p>
+      <ul class="sub lista-ok">
+        <li>Si subes dos Excel del mismo proyecto con distinta fecha de corte, el más reciente es el que cuenta y el otro pasa a su historial.</li>
+        <li>Todo se lee y se guarda en tu navegador: los archivos no se envían a ningún servidor.</li>
+        <li>Descarga la <a href="plantilla/plantilla-control-presupuestario.xlsx">plantilla vacía</a> o, para probar, los <a href="ejemplos/ejemplos-para-subir.zip">Excel de ejemplo</a> (6 proyectos, un corte anterior y un archivo con un error a propósito).</li>
+      </ul>
+      <label class="zona" id="mc-zona">
+        <input type="file" id="mc-archivos" multiple accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
+        <b>Arrastra aquí los Excel o pulsa para elegirlos</b>
+        <span>Puedes elegir varios a la vez. Solo archivos .xlsx con la plantilla.</span>
+      </label>
+      <p class="sub" style="margin:12px 0 0" id="mc-probar">¿Quieres ver cómo funciona? <button type="button" class="boton" id="mc-ejemplo">Ver la cartera de ejemplo (6 proyectos)</button></p>
+    </div>
+    <div id="mc-informe"></div>
+    <div id="mc-cartera"></div>
+  </section>
+
+  <!-- ===================== VISTA PROYECTO (panel de un proyecto) ===================== -->
+  <section class="vista" id="v-mi-proyecto" hidden>
+    <div class="card barra-carga" id="mi-barra" hidden></div>
+    <div class="card" id="mi-intro">
+      <h2>Analiza tu propio proyecto</h2>
+      <p class="sub">Sube el Excel de tu proyecto y la herramienta comprueba que los datos sean correctos antes de analizarlo. No escribes ningún número en la web: todo sale del archivo. Si llevas varios proyectos, súbelos juntos en la pestaña <a href="#mi-cartera" data-ir="mi-cartera">Cartera</a>.</p>
+      <ol class="pasos">
+        <li><b>Descarga la plantilla</b> (<a href="plantilla/plantilla-control-presupuestario.xlsx">plantilla vacía</a> o <a href="plantilla/ejemplo-ERP-01.xlsx">ejemplo relleno</a>) y ábrela en Google Sheets o Excel.</li>
+        <li><b>Rellénala</b> con tu proyecto. La pestaña <i>Comprobación</i> te avisa de los errores mientras escribes.</li>
+        <li><b>Súbela aquí.</b> Desde Google Sheets: Archivo › Descargar › Microsoft Excel (.xlsx).</li>
+      </ol>
+      <label class="zona" id="mi-zona">
+        <input type="file" id="mi-archivo" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
+        <b>Arrastra aquí tu Excel o pulsa para elegirlo</b>
+        <span>Solo archivos .xlsx con la plantilla. El archivo se lee en tu navegador: no se envía a ningún servidor.</span>
+      </label>
+      <p class="sub" style="margin:12px 0 0">¿No tienes uno a mano? <button type="button" class="boton" id="mi-ejemplo">Ver la cartera de ejemplo (6 proyectos)</button></p>
+    </div>
+    <div id="mi-resultado"></div>
+    <div id="mi-panel"></div>
+    <div id="mi-comprobacion"></div>
+  </section>
+
+  <!-- ===================== VISTA 3: METODOLOGÍA ===================== -->
+  <section class="vista" id="v-metodo" hidden>
+    <div class="card">
+      <h2>Cómo leer este panel</h2>
+      <p class="sub">Cada mes, el Project Lead imputa las horas y gastos reales, actualiza el porcentaje de avance y estima lo que falta. Con eso, el panel compara tres cifras: lo presupuestado, lo gastado y lo que se prevé gastar al terminar. Esta última no es una sola: se calcula con cinco métodos y se toma el valor del centro.</p>
+    </div>
+    <div class="glosario">
+      <div class="card"><h3>Presupuesto (BAC)</h3><p><code>Σ horas presupuestadas × tarifa + gastos presupuestados</code></p><p>Lo aprobado para el proyecto. En inglés <i>Budget at Completion</i>.</p></div>
+      <div class="card"><h3>Coste real (AC)</h3><p><code>Σ horas imputadas × tarifa + gastos reales</code></p><p>Lo gastado hasta la fecha de corte. <i>Actual Cost</i>.</p></div>
+      <div class="card"><h3>% consumido</h3><p><code>AC / BAC</code></p><p>Qué parte del presupuesto se ha gastado. Por sí solo no dice si va bien: hay que compararlo con el avance.</p></div>
+      <div class="card"><h3>Previsión pendiente (ETC)</h3><p><code>Σ horas pendientes × tarifa + gastos pendientes</code></p><p>Lo que el Project Lead estima que falta por gastar. <i>Estimate to Complete</i>.</p></div>
+      <div class="card"><h3>Coste estimado al finalizar (EAC)</h3><p><code>mediana de los métodos activos</code></p><p>Cuánto costará el proyecto en total. Es la <b>estimación central</b>: el valor del centro de los cinco métodos (ver abajo). El <b>rango</b> va del método más optimista al más pesimista. <i>Estimate at Completion</i>.</p></div>
+      <div class="card"><h3>Desviación estimada</h3><p><code>BAC − EAC</code></p><p>Positiva (+) = ahorro. Negativa (−) = sobrecoste. También en % del presupuesto. Es la que decide la etiqueta de estado.</p></div>
+      <div class="card"><h3>Valor ganado (EV)</h3><p><code>% avance × BAC</code></p><p>Lo que "vale" el trabajo hecho según el presupuesto. Si vas al 50 % de un proyecto de 100.000 €, has ganado 50.000 €.</p></div>
+      <div class="card"><h3>CPI (eficiencia en coste)</h3><p><code>EV / AC</code></p><p>Cuánto trabajo obtienes por cada euro gastado. 1,00 = según presupuesto; 0,85 = por cada euro gastado solo has avanzado 85 céntimos de trabajo.</p></div>
+      <div class="card"><h3>SPI (eficiencia en plazo)</h3><p><code>EV / PV</code></p><p>PV es lo que se planificó gastar hasta hoy. SPI menor que 1 = se avanza más lento que el plan.</p></div>
+    </div>
+    <div class="card" style="margin-top:16px">
+      <h2>Los cinco métodos de estimación</h2>
+      <p class="sub">Cada método mira el proyecto desde un ángulo distinto y ninguno es "el bueno". Por eso el panel muestra el rango completo y usa como estimación central la <b>mediana</b>: el valor del centro. La mediana no se deja arrastrar por un método que se dispara (por ejemplo, al principio del proyecto, cuando el avance es muy pequeño). Con 4 métodos activos, es la media de los dos del centro.</p>
+      <table>
+        <thead><tr><th>Método</th><th>Fórmula</th><th>Qué supone</th></tr></thead>
+        <tbody>
+          <tr><td>Previsión del Project Lead</td><td><code>AC + ETC</code></td><td>El criterio de quien mejor conoce el proyecto.</td></tr>
+          <tr><td>Eficiencia actual (CPI)</td><td><code>BAC / CPI</code></td><td>Lo que queda se hace con la misma eficiencia que hasta ahora.</td></tr>
+          <tr><td>Resto según presupuesto</td><td><code>AC + (BAC − EV)</code></td><td>Los desvíos ya ocurridos no se repiten.</td></tr>
+          <tr><td>Eficiencia y plazo (CPI × SPI)</td><td><code>AC + (BAC − EV) / (CPI × SPI)</code></td><td>Además penaliza ir retrasado. Suele ser el más pesimista.</td></tr>
+          <tr><td>Ritmo de gasto mensual</td><td><code>AC + media 3 últimos meses × meses que quedan</code></td><td>Se sigue gastando como en los últimos meses hasta la fecha de fin.</td></tr>
+        </tbody>
+      </table>
+      <p class="sub" style="margin-top:12px">En la pestaña Proyecto puedes desmarcar un método que no tenga sentido; la elección se guarda en tu navegador. Un método que no se puede calcular queda fuera solo y se dice por qué: sin avance no hay CPI, sin plan mensual no hay SPI ni método CPI × SPI, y sin previsión del Project Lead no hay método 1. En un proyecto cerrado no se estima: el coste final es el real.</p>
+    </div>
+    <div class="card" style="margin-top:16px">
+      <h2>Reglas del semáforo</h2>
+      <p class="sub">La etiqueta depende solo de la desviación de la estimación central: lo que importa es si el proyecto termina dentro del presupuesto. Describe dónde está el coste; no es un juicio sobre el proyecto, que el Project Lead explica en la reunión de seguimiento.</p>
+      <table>
+        <thead><tr><th>Estado</th><th>Desviación estimada</th></tr></thead>
+        <tbody>
+          <tr><td><span class="sem verde"><i>✓</i>En línea</span></td><td>≥ 0,0 % (en presupuesto o ahorro; se compara redondeada a un decimal, como se muestra)</td></tr>
+          <tr><td><span class="sem ambar"><i>!</i>Algo por encima</span></td><td>entre 0 % y −5 %</td></tr>
+          <tr><td><span class="sem rojo"><i>✕</i>Por encima</span></td><td>peor que −5 %</td></tr>
+        </tbody>
+      </table>
+      <p class="sub" style="margin-top:12px">En la pestaña Proyecto aparece además una nota cuando la previsión del Project Lead se separa más de un 5 % del presupuesto de la estimación central, para que se comente en la reunión.</p>
+    </div>
+    <div class="card">
+      <h2>Supuestos de esta versión</h2>
+      <ul class="sub">
+        <li>Empresa, clientes, personas y cifras son ficticios.</li>
+        <li>Importes a coste interno (horas × tarifa de coste por perfil + gastos). El precio de venta y el margen quedan para una versión posterior.</li>
+        <li>El avance (%) lo informa el Project Lead; el panel no lo calcula.</li>
+        <li>Las fechas de fin no cambian aunque haya retraso. La previsión del Project Lead es por partida, no por mes, así que el gráfico solo marca su cierre.</li>
+        <li>Un proyecto se da por cerrado cuando el avance es 100 % y la fecha de corte es igual o posterior a la de fin. El panel siempre explica por qué lo considera cerrado o en curso.</li>
+        <li>De cada proyecto se guarda una foto de las cifras de cada fecha de corte (con los métodos activos en ese momento). Volver a subir el mismo corte sustituye su foto. Si el plan mensual, el presupuesto o la fecha de fin cambian respecto al corte anterior, o si bajan el avance o el coste real, la herramienta lo avisa: no decide si el cambio es correcto. El historial vive en este navegador; se puede descargar una copia y cargarla en otro.</li>
+        <li>La pestaña Cartera junta tus proyectos: cada Excel es un proyecto, identificado por su nombre (celda B2). Un Excel con un corte más reciente sustituye al guardado y el anterior pasa al historial; uno con un corte anterior solo se añade al historial. Las cifras totales suman los proyectos tal como están en su último corte: si los cortes no son del mismo mes, la herramienta lo avisa porque no son del todo comparables.</li>
+        <li>La cartera de ejemplo son seis proyectos inventados de una consultora ficticia, convertidos al mismo formato que la plantilla de Excel: se analizan exactamente igual que los tuyos. Al subir tus Excel, el ejemplo se quita.</li>
+      </ul>
+    </div>
+  </section>
+</main>
+<footer>Proyecto de portfolio · Herramienta de control presupuestario para project leads y PMO · Datos ficticios.</footer>
+
+<!-- Orden de carga: primero los datos, luego las fórmulas, por último la pantalla -->
+<script src="js/data.js"></script>
+<script src="js/kpis.js"></script>
+<script src="js/app.js"></script>
+<!-- Importador de Excel -->
+<script src="js/lector-xlsx.js"></script>
+<script src="js/importador.js"></script>
+<script src="js/ejemplo-erp01.js"></script>
+<script src="js/adaptador.js"></script>
+<script src="js/historial.js"></script>
+<script src="js/resumen.js"></script>
+<script src="js/mi-proyecto.js"></script>
+<script src="js/mi-cartera.js"></script>
+</body>
+</html>
